@@ -13,7 +13,7 @@ type StructAutoGenerate struct {
 }
 type Option struct {
 	Obj         interface{}
-	SavePath        string
+	SavePath    string
 	PackageName string
 }
 
@@ -31,8 +31,8 @@ func (s *StructAutoGenerate) Generate() error {
 	}
 
 	// struct 内容, set-get 方法
-	newFunc, structContent, setGetContent := s.createContent()
-	
+	IContent, newFunc, structContent, setGetContent := s.createContent()
+
 	// 写入文件struct
 	var savePath = s.SavePath
 	// 是否指定保存路径
@@ -47,7 +47,7 @@ func (s *StructAutoGenerate) Generate() error {
 	}
 	defer f.Close()
 
-	_,err = f.WriteString(packageName + structContent + newFunc + strings.Join(setGetContent, ""))
+	_, err = f.WriteString(packageName + IContent + structContent + newFunc + strings.Join(setGetContent, ""))
 	if err != nil {
 		fmt.Println("Can not write file")
 		return err
@@ -59,19 +59,21 @@ func (s *StructAutoGenerate) Generate() error {
 	return err
 }
 
-func (s *StructAutoGenerate) createContent() (string, string, []string) {
+func (s *StructAutoGenerate) createContent() (string, string, string, []string) {
 	// set get
 	var setGetContent []string
 	// 组装struct
 	var ref = reflect.TypeOf(s.Obj)
-	
+
 	var structName = ref.Name()
 	var structNameUpper = structName
-	if len(structNameUpper)<=1 {
+	if len(structNameUpper) <= 1 {
 		structNameUpper = strings.ToUpper(structNameUpper)
 	} else {
-		structNameUpper = strings.ToUpper(structNameUpper[0:1]) + strings.ToLower(structNameUpper[1:])
+		structNameUpper = strings.ToUpper(structNameUpper[0:1]) + structNameUpper[1:]
 	}
+
+	var IContent string = fmt.Sprintf("type I%s interface {\n", structNameUpper)
 
 	var newFunc string = fmt.Sprintf("func New%s() *%s {\nreturn new(%s)}\n\n",
 		structNameUpper, structName, structName)
@@ -81,7 +83,7 @@ func (s *StructAutoGenerate) createContent() (string, string, []string) {
 		var fieldName = ref.Field(i).Name
 		var fieldType = ref.Field(i).Type.String()
 		var fieldTage string
-		if reflect.ValueOf(ref.Field(i).Tag).String()=="" {
+		if reflect.ValueOf(ref.Field(i).Tag).String() == "" {
 			fieldTage = "%s"
 		} else {
 			fieldTage = " `%s`"
@@ -89,21 +91,29 @@ func (s *StructAutoGenerate) createContent() (string, string, []string) {
 		structContent += fmt.Sprintf("%s %s"+fieldTage+"\n", fieldName, fieldType, ref.Field(i).Tag)
 
 		var funcName string
-		if len(fieldName)<=1 {
+		if len(fieldName) <= 1 {
 			funcName = strings.ToUpper(fieldName)
 		} else {
-			funcName = strings.ToUpper(fieldName[0:1]) + strings.ToLower(fieldName[1:])
+			funcName = strings.ToUpper(fieldName[0:1]) + fieldName[1:]
 		}
 		// set
-		setGetContent = append(setGetContent, 
+		setGetContent = append(setGetContent,
 			fmt.Sprintf("func (o *%s) Set%s(arg %s) {\no.%s = arg\n}\n\n",
 				structName, funcName, fieldType, fieldName))
+
 		// get
-		setGetContent = append(setGetContent, 
-			fmt.Sprintf("func (o *%s) Get%s(arg %s) %s {\nreturn o.%s\n}\n\n",
-				structName, funcName, fieldType, fieldType, fieldName))
+		setGetContent = append(setGetContent,
+			fmt.Sprintf("func (o *%s) Get%s() %s {\nreturn o.%s\n}\n\n",
+				structName, funcName, fieldType, fieldName))
+		//setGetContent = append(setGetContent,
+		//	fmt.Sprintf("GetBindName(arg %s) %s\n",
+		//		structName, funcName, fieldType, fieldType, fieldName))
+		// interface
+		IContent += fmt.Sprintf("Set%s(arg %s)\n", funcName, fieldType)
+		IContent += fmt.Sprintf("Get%s() %s\n", funcName, fieldType)
 	}
+	IContent += "}\n"
 	structContent += "}\n\n"
-	
-	return newFunc, structContent, setGetContent
+
+	return IContent, newFunc, structContent, setGetContent
 }
