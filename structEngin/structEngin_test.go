@@ -16,7 +16,7 @@ type Nested struct {
 	F1 interface{}
 	Nested2
 	Nested3
-	F4 string
+	F4 string `gorose:"ignore"`
 }
 
 func TestStructEngin_GetStructFields(t *testing.T) {

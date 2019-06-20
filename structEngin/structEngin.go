@@ -19,13 +19,17 @@ import (
 //	SliceInt64
 //)
 type StructEngin struct {
-	IsSlice bool
-	Fields  []interface{}
-	Result  []map[string]interface{}
+	Fields        []interface{}
+	Result        []map[string]interface{}
+	TagName       string
+	TagIgnoreName string
 }
 
 func New() *StructEngin {
-	return new(StructEngin)
+	s := new(StructEngin)
+	s.TagName = "gorose"
+	s.TagIgnoreName = "ignore"
+	return s
 }
 
 func (s *StructEngin) GetStructFields(data interface{}) []interface{} {
@@ -41,19 +45,13 @@ func (s *StructEngin) GetStructFields(data interface{}) []interface{} {
 			//}
 		default:
 			//if valueField.CanAddr() {
-			s.setFields(valueField.Addr().Interface())
+			s.AppendFields(valueField.Addr().Interface())
 			//} else {
 			//	s.setFields(valueField.Interface())
 			//}
 		}
 	}
 	return s.GetFields()
-}
-func (s *StructEngin) setFields(arg interface{}) {
-	s.Fields = append(s.Fields, arg)
-}
-func (s *StructEngin) GetFields() []interface{} {
-	return s.Fields
 }
 
 func (s *StructEngin) StructContent2Map(data interface{}) []map[string]interface{} {
@@ -84,18 +82,56 @@ func (s *StructEngin) getStructContent(val reflect.Value) {
 			//s.StructContent2Map(valueField.Interface())
 		default:
 			//s.setFields(valueField.Addr().Interface())
-			var fieldName = typeField.Tag.Get("gorose")
-			if fieldName == "" {
-				fieldName = typeField.Name
+			var fieldName = typeField.Tag.Get(s.GetTagName())
+			if fieldName!=s.GetTagIgnoreName() {
+				if fieldName == "" {
+					fieldName = typeField.Name
+				}
+				mapTmp[fieldName] = valueField.Interface()
 			}
-			mapTmp[fieldName] = valueField.Interface()
 		}
 	}
-	s.setResult(mapTmp)
+	s.AppendResult(mapTmp)
 }
-func (s *StructEngin) setResult(arg map[string]interface{}) {
+
+func (s *StructEngin) AppendFields(arg interface{}) {
+	s.Fields = append(s.Fields, arg)
+}
+
+func (s *StructEngin) SetFields(arg []interface{}) {
+	s.Fields = arg
+}
+
+func (s *StructEngin) GetFields() []interface{} {
+	return s.Fields
+}
+
+func (s *StructEngin) AppendResult(arg map[string]interface{}) {
 	s.Result = append(s.Result, arg)
 }
+
+func (s *StructEngin) SetResult(arg []map[string]interface{}) {
+	s.Result = arg
+}
+
 func (s *StructEngin) GetResult() []map[string]interface{} {
 	return s.Result
+}
+
+func (s *StructEngin) SetTagName(arg string) *StructEngin {
+	s.TagName = arg
+	return s
+}
+
+func (s *StructEngin) GetTagName() string {
+	return s.TagName
+}
+
+func (s *StructEngin) SetTagIgnoreName(arg string) *StructEngin {
+	s.TagIgnoreName = arg
+	return s
+}
+
+func (s *StructEngin) GetTagIgnoreName() string {
+	return s.TagIgnoreName
 }

@@ -8,9 +8,10 @@ import (
 func TestStructAutoGenerate_Generate(t *testing.T) {
 
 	type Users struct {
-		Uid  int    `gorose:"uid"`
-		Name string `gorose:"name"`
-		Age  int    `gorose:"age"`
+		Fields  []interface{}
+		Result  []map[string]interface{}
+		TagName string
+		TagIgnoreName string
 	}
 	//var a tt
 	err := New(&Option{
