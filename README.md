@@ -1,7 +1,13 @@
 # gocar
 some useful tool and convertor and etc.
 
+## 目录
+[structAutoGenerate](#structAutoGenerate)
+[structEngin](#structEngin)
+[varBindValue](#varBindValue)
+
 ## structAutoGenerate
+
 根据struct, 自动生成对应字段的`Set()`和`Get()`方法, 同时会为这些方法生成对应的接口
 
 ```go
@@ -79,6 +85,7 @@ func (o *Users) GetAge() int {
 ```
 
 ## structEngin
+
 结构体操作工具包, 目前提供两个工具  
 1. 抽取结构体的字段指针, 放入一个 `[]interface{}`中, 同时支持嵌套结构体的循环抽取, 至于抽取出来做什么, 比如可以给他赋值, 在数据库结果集绑定的时候, 很有用  
 2. 获取结构体的内容到一个`[]map[string]inteface{}`中, 使用场景: 数据库插入或修改时, 传入结构体数据的解析  
@@ -151,6 +158,7 @@ func testStructContent2Map() {
 ```
 
 ## varBindValue
+
 给变量指针绑定值
 ```go
 
