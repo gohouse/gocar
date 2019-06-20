@@ -6,24 +6,17 @@ import (
 )
 
 func TestStructAutoGenerate_Generate(t *testing.T) {
-	type OrmArgs struct {
-		table    string
-		fields   []string        // fields
-		where    [][]interface{} // where
-		order    string          // order
-		limit    int             // limit
-		offset   int             // offset
-		join     [][]interface{} // join
-		distinct bool            // distinct
-		union    string          // sum/count/avg/max/min
-		group    string          // group
-		having   string          // having
-		data     interface{}     // data
+
+	type Users struct {
+		Uid  int    `gorose:"uid"`
+		Name string `gorose:"name"`
+		Age  int    `gorose:"age"`
 	}
 	//var a tt
 	err := New(&Option{
-		Obj:         OrmArgs{},
+		Obj:         Users{},
 		PackageName: "structAutoGenerate",
+		SavePath: "./users.go",
 	}).Generate()
 
 	fmt.Println(err)
