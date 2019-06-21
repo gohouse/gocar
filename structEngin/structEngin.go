@@ -1,6 +1,8 @@
 package structEngin
 
 import (
+	"github.com/gohouse/gocar/helper"
+	"github.com/gohouse/t"
 	"reflect"
 )
 
@@ -23,6 +25,7 @@ type StructEngin struct {
 	Result        []map[string]interface{}
 	TagName       string
 	TagIgnoreName string
+	ExtraCols	[]string
 }
 
 func New() *StructEngin {
@@ -79,15 +82,23 @@ func (s *StructEngin) getStructContent(val reflect.Value) {
 		switch valueField.Kind() {
 		case reflect.Struct:
 			continue
-			//s.StructContent2Map(valueField.Interface())
 		default:
-			//s.setFields(valueField.Addr().Interface())
 			var fieldName = typeField.Tag.Get(s.GetTagName())
+			// 如果该字段没有被忽略, 则获取值
 			if fieldName!=s.GetTagIgnoreName() {
+				// 如果tag为空, 则获取字段名字
 				if fieldName == "" {
 					fieldName = typeField.Name
 				}
-				mapTmp[fieldName] = valueField.Interface()
+				// 如果是struct字段类型的默认值, 则不获取
+				if t.New(valueField.Interface()).Bool() {
+					mapTmp[fieldName] = valueField.Interface()
+				} else {
+					// 如果指定了强制获取, 则也获取
+					if helper.InArray(fieldName, s.ExtraCols) {
+						mapTmp[fieldName] = valueField.Interface()
+					}
+				}
 			}
 		}
 	}
@@ -100,6 +111,10 @@ func (s *StructEngin) AppendFields(arg interface{}) {
 
 func (s *StructEngin) SetFields(arg []interface{}) {
 	s.Fields = arg
+}
+func (s *StructEngin) SetExtraCols(args []string) *StructEngin {
+	s.ExtraCols = args
+	return s
 }
 
 func (s *StructEngin) GetFields() []interface{} {
