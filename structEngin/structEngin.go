@@ -25,7 +25,7 @@ type StructEngin struct {
 	Result        []map[string]interface{}
 	TagName       string
 	TagIgnoreName string
-	ExtraCols	[]string
+	ExtraCols     []string
 }
 
 func New() *StructEngin {
@@ -85,7 +85,7 @@ func (s *StructEngin) getStructContent(val reflect.Value) {
 		default:
 			var fieldName = typeField.Tag.Get(s.GetTagName())
 			// 如果该字段没有被忽略, 则获取值
-			if fieldName!=s.GetTagIgnoreName() {
+			if fieldName != s.GetTagIgnoreName() {
 				// 如果tag为空, 则获取字段名字
 				if fieldName == "" {
 					fieldName = typeField.Name
