@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 )
+
 // StructAutoGenerate
 type StructAutoGenerate struct {
 	*Option
@@ -17,17 +18,17 @@ type Option struct {
 	Obj         interface{}
 	SavePath    string
 	PackageName string
-	ShortPre	string
+	ShortPre    string
 }
 
 func New(arg *Option) *StructAutoGenerate {
-	if arg.Obj==nil {
+	if arg.Obj == nil {
 		panic("请传入要解析的结构体!")
 	}
 	var s = &StructAutoGenerate{Option: arg}
 
 	// 是否指定了method的前缀短标记, 目的是防止与包名或其他变量冲突
-	if s.ShortPre==""{
+	if s.ShortPre == "" {
 		s.ShortPre = "o"
 	}
 	// 如果没有指定保存路径, 则保存当前运行目录
@@ -87,16 +88,16 @@ func (s *StructAutoGenerate) createContent() (string, string, string, []string) 
 
 	//var IContent string = fmt.Sprintf("type I%s interface {\n", structNameUpper)
 	var IContent string = s.getFormatStrWithNotes("type I%s interface {\n",
-		[]interface{}{structNameUpper}, []interface{}{"I"+structNameUpper})
+		[]interface{}{structNameUpper}, []interface{}{"I" + structNameUpper, " 定义接口"})
 
 	//var newFunc string = fmt.Sprintf("func New%s() *%s {\nreturn new(%s)}\n\n",
 	//	structNameUpper, structName, structName)
 	var newFunc string = s.getFormatStrWithNotes("func New%s() *%s {\nreturn new(%s)}\n\n",
-		[]interface{}{structNameUpper, structName, structName},[]interface{}{"New"+structNameUpper})
+		[]interface{}{structNameUpper, structName, structName}, []interface{}{"New" + structNameUpper, " 初始化"})
 
 	//var structContent string = fmt.Sprintf("type %s struct {\n", structName)
 	var structContent string = s.getFormatStrWithNotes("type %s struct {\n",
-		[]interface{}{structName},[]interface{}{structName})
+		[]interface{}{structName}, []interface{}{structName, " 定义结构体"})
 	for i := 0; i < ref.NumField(); i++ {
 		var fieldName = ref.Field(i).Name
 		var fieldType = ref.Field(i).Type.String()
@@ -121,7 +122,7 @@ func (s *StructAutoGenerate) createContent() (string, string, string, []string) 
 		setGetContent = append(setGetContent,
 			s.getFormatStrWithNotes("func (%s *%s) Set%s(arg %s) {\no.%s = arg\n}\n\n",
 				[]interface{}{s.ShortPre, structName, funcName, fieldType, fieldName},
-				[]interface{}{"Set"+funcName," arg type:"+fieldType}))
+				[]interface{}{"Set" + funcName, " 设置该字段值"}))
 
 		// get
 		//setGetContent = append(setGetContent,
@@ -130,7 +131,7 @@ func (s *StructAutoGenerate) createContent() (string, string, string, []string) 
 		setGetContent = append(setGetContent,
 			s.getFormatStrWithNotes("func (%s *%s) Get%s() %s {\nreturn o.%s\n}\n\n",
 				[]interface{}{s.ShortPre, structName, funcName, fieldType, fieldName},
-				[]interface{}{"Get"+funcName}))
+				[]interface{}{"Get" + funcName, " 获取该字段值"}))
 		//setGetContent = append(setGetContent,
 		//	fmt.Sprintf("GetBindName(arg %s) %s\n",
 		//		structName, funcName, fieldType, fieldType, fieldName))
@@ -143,7 +144,7 @@ func (s *StructAutoGenerate) createContent() (string, string, string, []string) 
 
 	return IContent, newFunc, structContent, setGetContent
 }
-func (s *StructAutoGenerate) getFormatStrWithNotes(fmtStr string, bindName []interface{}, notes []interface{}) (string) {
+func (s *StructAutoGenerate) getFormatStrWithNotes(fmtStr string, bindName []interface{}, notes []interface{}) string {
 	return fmt.Sprint(
 		"// ", fmt.Sprint(notes...), "\n",
 		fmt.Sprintf(fmtStr, bindName...),
