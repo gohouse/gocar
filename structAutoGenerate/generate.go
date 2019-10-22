@@ -21,6 +21,7 @@ type Option struct {
 	ShortPre    string
 }
 
+// New 初始化
 func New(arg *Option) *StructAutoGenerate {
 	if arg.Obj == nil {
 		panic("请传入要解析的结构体!")
@@ -44,6 +45,7 @@ func New(arg *Option) *StructAutoGenerate {
 	return s
 }
 
+// Generate 执行迁移
 func (s *StructAutoGenerate) Generate() error {
 	// 包名
 	var packageName = fmt.Sprintf("package %s\n\n", s.PackageName)
@@ -115,26 +117,19 @@ func (s *StructAutoGenerate) createContent() (string, string, string, []string) 
 		} else {
 			funcName = strings.ToUpper(fieldName[0:1]) + fieldName[1:]
 		}
+
 		// set
-		//setGetContent = append(setGetContent,
-		//	fmt.Sprintf("func (o *%s) Set%s(arg %s) {\no.%s = arg\n}\n\n",
-		//		structName, funcName, fieldType, fieldName))
 		setGetContent = append(setGetContent,
 			s.getFormatStrWithNotes("func (%s *%s) Set%s(arg %s) {\no.%s = arg\n}\n\n",
 				[]interface{}{s.ShortPre, structName, funcName, fieldType, fieldName},
 				[]interface{}{"Set" + funcName, " 设置该字段值"}))
 
 		// get
-		//setGetContent = append(setGetContent,
-		//	fmt.Sprintf("func (o *%s) Get%s() %s {\nreturn o.%s\n}\n\n",
-		//		structName, funcName, fieldType, fieldName))
 		setGetContent = append(setGetContent,
 			s.getFormatStrWithNotes("func (%s *%s) Get%s() %s {\nreturn o.%s\n}\n\n",
 				[]interface{}{s.ShortPre, structName, funcName, fieldType, fieldName},
 				[]interface{}{"Get" + funcName, " 获取该字段值"}))
-		//setGetContent = append(setGetContent,
-		//	fmt.Sprintf("GetBindName(arg %s) %s\n",
-		//		structName, funcName, fieldType, fieldType, fieldName))
+
 		// interface
 		IContent += fmt.Sprintf("Set%s(arg %s)\n", funcName, fieldType)
 		IContent += fmt.Sprintf("Get%s() %s\n", funcName, fieldType)
@@ -144,6 +139,7 @@ func (s *StructAutoGenerate) createContent() (string, string, string, []string) 
 
 	return IContent, newFunc, structContent, setGetContent
 }
+
 func (s *StructAutoGenerate) getFormatStrWithNotes(fmtStr string, bindName []interface{}, notes []interface{}) string {
 	return fmt.Sprint(
 		"// ", fmt.Sprint(notes...), "\n",
