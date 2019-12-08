@@ -91,13 +91,27 @@ func (s *StructEngin) getStructContent(val reflect.Value) {
 					fieldName = typeField.Name
 				}
 				// 如果是struct字段类型的默认值, 则不获取
-				if t.New(valueField.Interface()).Bool() {
-					mapTmp[fieldName] = valueField.Interface()
-				} else {
-					// 如果指定了强制获取, 则也获取
-					if helper.InArray(fieldName, s.ExtraCols) {
+				//if t.New(valueField.Interface()).Bool() {
+				//	mapTmp[fieldName] = valueField.Interface()
+				//} else {
+				//	// 如果指定了强制获取, 则也获取
+				//	if helper.InArray(fieldName, s.ExtraCols) {
+				//		mapTmp[fieldName] = valueField.Interface()
+				//	}
+				//}
+				switch valueField.Kind() {
+				case reflect.Bool:
+					if valueField.Bool() {
 						mapTmp[fieldName] = valueField.Interface()
 					}
+				default:
+					if t.New(valueField.Interface()).String() != "" {
+						mapTmp[fieldName] = valueField.String()
+					}
+				}
+				// 如果指定了强制获取, 则也获取
+				if helper.InArray(fieldName, s.ExtraCols) {
+					mapTmp[fieldName] = valueField.Interface()
 				}
 			}
 		}
