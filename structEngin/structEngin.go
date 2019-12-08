@@ -110,7 +110,7 @@ func (s *StructEngin) getStructContent(val reflect.Value) {
 					}
 				default:
 					if t.New(valueField.Interface()).Float64() != 0 {
-						mapTmp[fieldName] = valueField.String()
+						mapTmp[fieldName] = valueField.Interface()
 					}
 				}
 				// 如果指定了强制获取, 则也获取
