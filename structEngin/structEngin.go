@@ -104,8 +104,12 @@ func (s *StructEngin) getStructContent(val reflect.Value) {
 					if valueField.Bool() {
 						mapTmp[fieldName] = valueField.Interface()
 					}
-				default:
+				case reflect.String:
 					if t.New(valueField.Interface()).String() != "" {
+						mapTmp[fieldName] = valueField.String()
+					}
+				default:
+					if t.New(valueField.Interface()).Float64() != 0 {
 						mapTmp[fieldName] = valueField.String()
 					}
 				}
